@@ -3,13 +3,15 @@ import customtkinter as cst
 import winrt.windows.applicationmodel.datatransfer as w_am_dt
 
 
+cst.set_appearance_mode("dark")
+
 class App(cst.CTk):
     def __init__(self):
         super().__init__()
-        self.geometry("600x500")
-        self.title("CTk example")
+        self.geometry("240x150")
+        self.title("Разметка")
 
-        self.button = cst.CTkButton(self, command=self.button_click)
+        self.button = cst.CTkButton(self, text="Вопрос:\nОтвет:", font=("Arial", 18), width=200, height=60, command=self.button_click)
         self.button.grid(row=0, column=0, padx=20, pady=10)
 
     def button_click(self):
