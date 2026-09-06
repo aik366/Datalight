@@ -133,21 +133,52 @@ class App(cst.CTk):
                         cliche_phrases.append(f'"{word}..."')
 
             colon_errors = []
-            for line in text.splitlines():
-                for m in re.finditer(r':\s*([А-ЯЁA-Z][^\s!?.:;,]*)', line):
-                    end = line.rfind(' ', 0, m.start())
-                    word1 = line[end + 1:m.start()].strip()
-                    if not word1:
-                        continue
-                    if word1[:1].isupper():
-                        continue
-                    colon_errors.append(f'"{word1}: {m.group(1)}..."')
+            for cm in re.finditer(r':', text):
+                before = text[:cm.start()].rstrip()
+                word1_m = re.search(r'([ЁёА-Яа-яA-Za-z-]+)\s*$', before)
+                if not word1_m:
+                    continue
+                word1 = word1_m.group(1)
+                if word1 in ("Вопрос", "Ответ"):
+                    continue
+                after = text[cm.end():]
+                cap_m = re.match(r'(?:\s*(?:\d+[.)]|[-–—*•])\s*)*\s*([А-ЯЁA-Z][^\s!?.:;,]*)', after)
+                if not cap_m:
+                    continue
+                cap_word = cap_m.group(1)
+                if after[cap_m.end(1):cap_m.end(1) + 1] == ":":
+                    continue
+                colon_errors.append(f'"{word1}: {cap_word}..."')
+
+            decimal_errors = []
+            for m in re.finditer(r'\d+,\d+%?', text):
+                if len(decimal_errors) >= 3:
+                    break
+                item = f'"{m.group(0)}"'
+                if item not in decimal_errors:
+                    decimal_errors.append(item)
+
+            percent_errors = []
+            for m in re.finditer(r'\d+(?:[.,]\d+)?%', text):
+                if len(percent_errors) >= 3:
+                    break
+                item = f'"{m.group(0)}"'
+                if item not in percent_errors:
+                    percent_errors.append(item)
 
             read_issues = []
-            sentences = re.split(r'(?<=[.!?…])\s+', text)
+            sentences = []
+            start = 0
+            for sm in re.finditer(r'(?:\r\n|\r|\n)|(?<=[.!?…])[ \t]+', text):
+                seg = sm.group(0)
+                if not (seg[0] in ".!?…" and sm.start() > 0 and text[sm.start() - 1].isdigit()):
+                    sentences.append(text[start:sm.start()])
+                    start = sm.end()
+            sentences.append(text[start:])
             for s in sentences:
                 if len(s) > 250:
-                    read_issues.append(f'предложение содержит {len(s)} символов (превышает 250)')
+                    quote = " ".join(s.split()[:3]) + "..."
+                    read_issues.append(f'предложение содержит {len(s)} символов("{quote}")')
             paragraphs = text.splitlines()
             for p in paragraphs:
                 p_len = len(p.strip())
@@ -157,11 +188,15 @@ class App(cst.CTk):
 
             parts = []
             if cliche_phrases:
-                parts.append(f'тег: "Клише" - имеются клишированные фразы({", ".join(cliche_phrases[:3])})')
+                parts.append(f'тег "Клише": имеются клишированные фразы({", ".join(cliche_phrases[:3])})')
             if colon_errors:
-                parts.append(f'тег: "Языковые ошибки" - заглавные буквы после двоеточий({", ".join(colon_errors[:3])})')
+                parts.append(f'тег "Языковые ошибки": заглавные буквы после двоеточий({", ".join(colon_errors[:3])})')
+            if decimal_errors:
+                parts.append(f'тег "Языковые ошибки": запятая вместо точки в десятичных дробях({", ".join(decimal_errors[:3])})')
+            if percent_errors:
+                parts.append(f'тег "Языковые ошибки": отсутствие пробела между значением и знаком процента({", ".join(percent_errors[:3])})')
             if read_issues:
-                parts.append(f'тег: "Трудночитаемость" - {"; ".join(read_issues[:3])}')
+                parts.append(f'тег "Трудночитаемость": {"; ".join(read_issues[:3])}')
 
             if not parts:
                 CTkMessagebox(title="Результат", message="Ошибки не найдены в буфере обмена.", icon="info")
