@@ -166,6 +166,30 @@ class App(cst.CTk):
                 if item not in percent_errors:
                     percent_errors.append(item)
 
+            unit_errors = []
+            for m in re.finditer(r'\d+(?:[.,]\d+)?(?:[А-Яа-яЁё]+|[A-Za-z]+)', text):
+                if len(unit_errors) >= 3:
+                    break
+                item = f'"{m.group(0)}"'
+                if item not in unit_errors:
+                    unit_errors.append(item)
+
+            currency_errors = []
+            for m in re.finditer(r'\d+(?:[.,]\d+)?[$€£¥₽¢]', text):
+                if len(currency_errors) >= 3:
+                    break
+                item = f'"{m.group(0)}"'
+                if item not in currency_errors:
+                    currency_errors.append(item)
+
+            numero_errors = []
+            for m in re.finditer(r'№\d+', text):
+                if len(numero_errors) >= 3:
+                    break
+                item = f'"{m.group(0)}"'
+                if item not in numero_errors:
+                    numero_errors.append(item)
+
             read_issues = []
             sentences = []
             start = 0
@@ -195,6 +219,12 @@ class App(cst.CTk):
                 parts.append(f'тег "Языковые ошибки": запятая вместо точки в десятичных дробях({", ".join(decimal_errors[:3])})')
             if percent_errors:
                 parts.append(f'тег "Языковые ошибки": отсутствие пробела между значением и знаком процента({", ".join(percent_errors[:3])})')
+            if unit_errors:
+                parts.append(f'тег "Языковые ошибки": отсутствие пробела между значением и единицей измерения({", ".join(unit_errors[:3])})')
+            if currency_errors:
+                parts.append(f'тег "Языковые ошибки": отсутствие пробела между значением и знаком валюты({", ".join(currency_errors[:3])})')
+            if numero_errors:
+                parts.append(f'тег "Языковые ошибки": отсутствие пробела между знаком № и числом({", ".join(numero_errors[:3])})')
             if read_issues:
                 parts.append(f'тег "Трудночитаемость": {"; ".join(read_issues[:3])}')
 
