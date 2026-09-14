@@ -122,12 +122,23 @@ class App(cst.CTk):
         "стоит отметить",
         "важно понимать",
         "необходимо учитывать",
+        "следует учитывать",
+        "важно отметить",
     ]
 
     _KANTSELYARIT_PHRASES = [
         "в целях",
         "на данном этапе",
         "имеет место быть",
+    ]
+
+    _EMOTIONAL_PHRASES = [
+        "если нужно, могу расписать это подробнее!",
+        "конечно! давайте разберёмся!",
+        "я — языковая модель и не могу",
+        "проверка пройдена успешно!",
+        "все условия соблюдены!",
+        "решение найдено корректно!",
     ]
 
     def find_errors(self):
@@ -175,6 +186,20 @@ class App(cst.CTk):
                 if not matches and re.search(rf'\b{re.escape(phrase)}\b', text, re.IGNORECASE):
                     sm = re.search(rf'\b{re.escape(phrase)}\b', text, re.IGNORECASE)
                     kantselyarit_phrases.append(f'"{sm.group(0)}..."')
+
+            emotional_phrases = []
+            for phrase in self._EMOTIONAL_PHRASES:
+                pattern = rf'\b{re.escape(phrase)}(?:[\s.,;:!?…-]+[^\s.,;:!?…]+){{0,2}}'
+                matches = list(re.finditer(pattern, text, re.IGNORECASE))
+                for m in matches:
+                    if len(emotional_phrases) >= 3:
+                        break
+                    item = f'"{m.group(0)}..."'
+                    if item not in emotional_phrases:
+                        emotional_phrases.append(item)
+                if not matches and re.search(rf'\b{re.escape(phrase)}\b', text, re.IGNORECASE):
+                    sm = re.search(rf'\b{re.escape(phrase)}\b', text, re.IGNORECASE)
+                    emotional_phrases.append(f'"{sm.group(0)}..."')
 
             colon_errors = []
             for cm in re.finditer(r':', text):
@@ -261,6 +286,8 @@ class App(cst.CTk):
                 parts.append(f'тег "Избыточность конструкций": ({", ".join(redundant_phrases[:3])})')
             if kantselyarit_phrases:
                 parts.append(f'тег "Канцелярит": ({", ".join(kantselyarit_phrases[:3])})')
+            if emotional_phrases:
+                parts.append(f'тег "Эмоциональный ответ": ({", ".join(emotional_phrases[:3])})')
             if colon_errors:
                 parts.append(f'тег "Языковые ошибки": заглавные буквы после двоеточий({", ".join(colon_errors[:3])})')
             if decimal_errors:
