@@ -116,21 +116,55 @@ class App(cst.CTk):
         "анализ задачи"
     ]
 
+    _REDUNDANT_PHRASES = [
+        "следует отметить",
+        "стоит отметить",
+        "важно понимать",
+        "необходимо учитывать",
+    ]
+
+    _KANTSELYARIT_PHRASES = [
+        "в целях",
+        "на данном этапе",
+        "имеет место быть",
+    ]
+
     def find_errors(self):
         try:
             text = self._text_to_check()
 
             cliche_phrases = []
             for word in self._CLICHE_WORDS:
-                if word in text:
-                    pattern = rf'\b{re.escape(word)}\s+(\S+)'
-                    matches = re.findall(pattern, text)
-                    for match in matches:
-                        if len(cliche_phrases) >= 3:
-                            break
-                        cliche_phrases.append(f'"{word} {match}..."')
-                    if not matches:
-                        cliche_phrases.append(f'"{word}..."')
+                pattern = rf'\b{re.escape(word)}\s+(\S+)'
+                matches = re.findall(pattern, text, re.IGNORECASE)
+                for match in matches:
+                    if len(cliche_phrases) >= 3:
+                        break
+                    cliche_phrases.append(f'"{word} {match}..."')
+                if not matches and re.search(re.escape(word), text, re.IGNORECASE):
+                    cliche_phrases.append(f'"{word}..."')
+
+            redundant_phrases = []
+            for phrase in self._REDUNDANT_PHRASES:
+                pattern = rf'\b{re.escape(phrase)}\s+(\S+)'
+                matches = re.findall(pattern, text, re.IGNORECASE)
+                for match in matches:
+                    if len(redundant_phrases) >= 3:
+                        break
+                    redundant_phrases.append(f'"{phrase} {match}..."')
+                if not matches and re.search(re.escape(phrase), text, re.IGNORECASE):
+                    redundant_phrases.append(f'"{phrase}..."')
+
+            kantselyarit_phrases = []
+            for phrase in self._KANTSELYARIT_PHRASES:
+                pattern = rf'\b{re.escape(phrase)}\s+(\S+)'
+                matches = re.findall(pattern, text, re.IGNORECASE)
+                for match in matches:
+                    if len(kantselyarit_phrases) >= 3:
+                        break
+                    kantselyarit_phrases.append(f'"{phrase} {match}..."')
+                if not matches and re.search(re.escape(phrase), text, re.IGNORECASE):
+                    kantselyarit_phrases.append(f'"{phrase}..."')
 
             colon_errors = []
             for cm in re.finditer(r':', text):
@@ -213,6 +247,10 @@ class App(cst.CTk):
             parts = []
             if cliche_phrases:
                 parts.append(f'тег "Клише": имеются клишированные фразы({", ".join(cliche_phrases[:3])})')
+            if redundant_phrases:
+                parts.append(f'тег "Избыточность конструкций": избыточные конструкции({", ".join(redundant_phrases[:3])})')
+            if kantselyarit_phrases:
+                parts.append(f'тег "Канцелярит": канцеляризмы({", ".join(kantselyarit_phrases[:3])})')
             if colon_errors:
                 parts.append(f'тег "Языковые ошибки": заглавные буквы после двоеточий({", ".join(colon_errors[:3])})')
             if decimal_errors:
