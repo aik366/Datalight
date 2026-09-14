@@ -136,36 +136,45 @@ class App(cst.CTk):
 
             cliche_phrases = []
             for word in self._CLICHE_WORDS:
-                pattern = rf'\b{re.escape(word)}\s+(\S+)'
-                matches = re.findall(pattern, text, re.IGNORECASE)
-                for match in matches:
+                pattern = rf'\b{re.escape(word)}(?:[\s.,;:!?…-]+[^\s.,;:!?…]+){{0,2}}'
+                matches = list(re.finditer(pattern, text, re.IGNORECASE))
+                for m in matches:
                     if len(cliche_phrases) >= 3:
                         break
-                    cliche_phrases.append(f'"{word} {match}..."')
-                if not matches and re.search(re.escape(word), text, re.IGNORECASE):
-                    cliche_phrases.append(f'"{word}..."')
+                    item = f'"{m.group(0)}..."'
+                    if item not in cliche_phrases:
+                        cliche_phrases.append(item)
+                if not matches and re.search(rf'\b{re.escape(word)}\b', text, re.IGNORECASE):
+                    sm = re.search(rf'\b{re.escape(word)}\b', text, re.IGNORECASE)
+                    cliche_phrases.append(f'"{sm.group(0)}..."')
 
             redundant_phrases = []
             for phrase in self._REDUNDANT_PHRASES:
-                pattern = rf'\b{re.escape(phrase)}\s+(\S+)'
-                matches = re.findall(pattern, text, re.IGNORECASE)
-                for match in matches:
+                pattern = rf'\b{re.escape(phrase)}(?:[\s.,;:!?…-]+[^\s.,;:!?…]+){{0,2}}'
+                matches = list(re.finditer(pattern, text, re.IGNORECASE))
+                for m in matches:
                     if len(redundant_phrases) >= 3:
                         break
-                    redundant_phrases.append(f'"{phrase} {match}..."')
-                if not matches and re.search(re.escape(phrase), text, re.IGNORECASE):
-                    redundant_phrases.append(f'"{phrase}..."')
+                    item = f'"{m.group(0)}..."'
+                    if item not in redundant_phrases:
+                        redundant_phrases.append(item)
+                if not matches and re.search(rf'\b{re.escape(phrase)}\b', text, re.IGNORECASE):
+                    sm = re.search(rf'\b{re.escape(phrase)}\b', text, re.IGNORECASE)
+                    redundant_phrases.append(f'"{sm.group(0)}..."')
 
             kantselyarit_phrases = []
             for phrase in self._KANTSELYARIT_PHRASES:
-                pattern = rf'\b{re.escape(phrase)}\s+(\S+)'
-                matches = re.findall(pattern, text, re.IGNORECASE)
-                for match in matches:
+                pattern = rf'\b{re.escape(phrase)}(?:[\s.,;:!?…-]+[^\s.,;:!?…]+){{0,2}}'
+                matches = list(re.finditer(pattern, text, re.IGNORECASE))
+                for m in matches:
                     if len(kantselyarit_phrases) >= 3:
                         break
-                    kantselyarit_phrases.append(f'"{phrase} {match}..."')
-                if not matches and re.search(re.escape(phrase), text, re.IGNORECASE):
-                    kantselyarit_phrases.append(f'"{phrase}..."')
+                    item = f'"{m.group(0)}..."'
+                    if item not in kantselyarit_phrases:
+                        kantselyarit_phrases.append(item)
+                if not matches and re.search(rf'\b{re.escape(phrase)}\b', text, re.IGNORECASE):
+                    sm = re.search(rf'\b{re.escape(phrase)}\b', text, re.IGNORECASE)
+                    kantselyarit_phrases.append(f'"{sm.group(0)}..."')
 
             colon_errors = []
             for cm in re.finditer(r':', text):
