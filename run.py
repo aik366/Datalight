@@ -249,9 +249,9 @@ class App(cst.CTk):
             if cliche_phrases:
                 parts.append(f'тег "Клише": имеются клишированные фразы({", ".join(cliche_phrases[:3])})')
             if redundant_phrases:
-                parts.append(f'тег "Избыточность конструкций": избыточные конструкции({", ".join(redundant_phrases[:3])})')
+                parts.append(f'тег "Избыточность конструкций": ({", ".join(redundant_phrases[:3])})')
             if kantselyarit_phrases:
-                parts.append(f'тег "Канцелярит": канцеляризмы({", ".join(kantselyarit_phrases[:3])})')
+                parts.append(f'тег "Канцелярит": ({", ".join(kantselyarit_phrases[:3])})')
             if colon_errors:
                 parts.append(f'тег "Языковые ошибки": заглавные буквы после двоеточий({", ".join(colon_errors[:3])})')
             if decimal_errors:
