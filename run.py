@@ -94,26 +94,51 @@ class App(cst.CTk):
         return text
 
     _CLICHE_WORDS = [
-        "Решим шаг за шагом",
-        "Это типичная",
-        "Типовой ответ на такую задачу",
-        "Анализ",
-        "Дано",
-        "Для решения задачи нужно",
-        "Для решения задачи",
-        "Таким образом",
-        "Нужно",
-        "Теперь",
-        "Тогда",
-        "Теперь нам нужно",
-        "Однако",
-        "Конечно!",
-        "Как я могу помочь?",
+        "решим шаг за шагом",
+        "это типичная",
+        "типовой ответ на такую задачу",
+        "анализ",
+        "дано",
+        "для решения задачи нужно",
+        "для решения задачи",
+        "таким образом",
+        "нужно",
+        "теперь",
+        "тогда",
+        "теперь нам нужно",
+        "однако",
+        "отлично",
+        "конечно!",
+        "как я могу помочь?",
         "постановка задачи",
         "анализ ситуации",
         "анализ исходных данных",
         "теоретические основы",
         "анализ задачи"
+    ]
+
+    _REDUNDANT_PHRASES = [
+        "следует отметить",
+        "стоит отметить",
+        "важно понимать",
+        "необходимо учитывать",
+        "следует учитывать",
+        "важно отметить",
+    ]
+
+    _KANTSELYARIT_PHRASES = [
+        "в целях",
+        "на данном этапе",
+        "имеет место быть",
+    ]
+
+    _EMOTIONAL_PHRASES = [
+        "если нужно, могу расписать это подробнее!",
+        "конечно! давайте разберёмся!",
+        "я — языковая модель и не могу",
+        "проверка пройдена успешно!",
+        "все условия соблюдены!",
+        "решение найдено корректно!",
     ]
 
     def find_errors(self):
@@ -122,15 +147,59 @@ class App(cst.CTk):
 
             cliche_phrases = []
             for word in self._CLICHE_WORDS:
-                if word in text:
-                    pattern = rf'\b{re.escape(word)}\s+(\S+)'
-                    matches = re.findall(pattern, text)
-                    for match in matches:
-                        if len(cliche_phrases) >= 3:
-                            break
-                        cliche_phrases.append(f'"{word} {match}..."')
-                    if not matches:
-                        cliche_phrases.append(f'"{word}..."')
+                pattern = rf'\b{re.escape(word)}(?:[\s.,;:!?…-]+[^\s.,;:!?…]+){{0,2}}'
+                matches = list(re.finditer(pattern, text, re.IGNORECASE))
+                for m in matches:
+                    if len(cliche_phrases) >= 3:
+                        break
+                    item = f'"{m.group(0)}..."'
+                    if item not in cliche_phrases:
+                        cliche_phrases.append(item)
+                if not matches and re.search(rf'\b{re.escape(word)}\b', text, re.IGNORECASE):
+                    sm = re.search(rf'\b{re.escape(word)}\b', text, re.IGNORECASE)
+                    cliche_phrases.append(f'"{sm.group(0)}..."')
+
+            redundant_phrases = []
+            for phrase in self._REDUNDANT_PHRASES:
+                pattern = rf'\b{re.escape(phrase)}(?:[\s.,;:!?…-]+[^\s.,;:!?…]+){{0,2}}'
+                matches = list(re.finditer(pattern, text, re.IGNORECASE))
+                for m in matches:
+                    if len(redundant_phrases) >= 3:
+                        break
+                    item = f'"{m.group(0)}..."'
+                    if item not in redundant_phrases:
+                        redundant_phrases.append(item)
+                if not matches and re.search(rf'\b{re.escape(phrase)}\b', text, re.IGNORECASE):
+                    sm = re.search(rf'\b{re.escape(phrase)}\b', text, re.IGNORECASE)
+                    redundant_phrases.append(f'"{sm.group(0)}..."')
+
+            kantselyarit_phrases = []
+            for phrase in self._KANTSELYARIT_PHRASES:
+                pattern = rf'\b{re.escape(phrase)}(?:[\s.,;:!?…-]+[^\s.,;:!?…]+){{0,2}}'
+                matches = list(re.finditer(pattern, text, re.IGNORECASE))
+                for m in matches:
+                    if len(kantselyarit_phrases) >= 3:
+                        break
+                    item = f'"{m.group(0)}..."'
+                    if item not in kantselyarit_phrases:
+                        kantselyarit_phrases.append(item)
+                if not matches and re.search(rf'\b{re.escape(phrase)}\b', text, re.IGNORECASE):
+                    sm = re.search(rf'\b{re.escape(phrase)}\b', text, re.IGNORECASE)
+                    kantselyarit_phrases.append(f'"{sm.group(0)}..."')
+
+            emotional_phrases = []
+            for phrase in self._EMOTIONAL_PHRASES:
+                pattern = rf'\b{re.escape(phrase)}(?:[\s.,;:!?…-]+[^\s.,;:!?…]+){{0,2}}'
+                matches = list(re.finditer(pattern, text, re.IGNORECASE))
+                for m in matches:
+                    if len(emotional_phrases) >= 3:
+                        break
+                    item = f'"{m.group(0)}..."'
+                    if item not in emotional_phrases:
+                        emotional_phrases.append(item)
+                if not matches and re.search(rf'\b{re.escape(phrase)}\b', text, re.IGNORECASE):
+                    sm = re.search(rf'\b{re.escape(phrase)}\b', text, re.IGNORECASE)
+                    emotional_phrases.append(f'"{sm.group(0)}..."')
 
             colon_errors = []
             for cm in re.finditer(r':', text):
@@ -213,6 +282,12 @@ class App(cst.CTk):
             parts = []
             if cliche_phrases:
                 parts.append(f'тег "Клише": имеются клишированные фразы({", ".join(cliche_phrases[:3])})')
+            if redundant_phrases:
+                parts.append(f'тег "Избыточность конструкций": ({", ".join(redundant_phrases[:3])})')
+            if kantselyarit_phrases:
+                parts.append(f'тег "Канцелярит": ({", ".join(kantselyarit_phrases[:3])})')
+            if emotional_phrases:
+                parts.append(f'тег "Эмоциональный ответ": ({", ".join(emotional_phrases[:3])})')
             if colon_errors:
                 parts.append(f'тег "Языковые ошибки": заглавные буквы после двоеточий({", ".join(colon_errors[:3])})')
             if decimal_errors:
