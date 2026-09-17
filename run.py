@@ -271,13 +271,13 @@ class App(cst.CTk):
             for s in sentences:
                 if len(s) > 250:
                     quote = " ".join(s.split()[:3]) + "..."
-                    read_issues.append(f'предложение содержит {len(s)} символов("{quote}")')
+                    read_issues.append(f'предложение "{quote}" содержит больше 250 символов')
             paragraphs = text.splitlines()
             for p in paragraphs:
                 p_len = len(p.strip())
                 if p_len > 600:
                     quote = " ".join(p.strip().split()[:4]) + "..."
-                    read_issues.append(f'абзац "{quote}" содержит {p_len} символов (превышает 600)')
+                    read_issues.append(f'абзац "{quote}" содержит больше 600 символов')
 
             parts = []
             if cliche_phrases:
