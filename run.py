@@ -132,6 +132,21 @@ class App(cst.CTk):
         "имеет место быть",
     ]
 
+    _MACHINE_STYLE_PHRASES = [
+        "давайте разберём это подробнее",
+        "теперь давайте перейдём к",
+        "стоит подробнее остановиться на",
+        "рассмотрим это более детально",
+        "итак, подведём итог",
+        "как вы уже заметили",
+        "как я упоминал ранее",
+        "важно подчеркнуть, что",
+        "следует обратить внимание на то, что",
+        "таким образом, мы видим, что",
+        "подводя итог, можно заключить, что",
+        "в заключение отметим, что",
+    ]
+
     _EMOTIONAL_PHRASES = [
         "если нужно, могу расписать это подробнее!",
         "конечно! давайте разберёмся!",
@@ -200,6 +215,20 @@ class App(cst.CTk):
                 if not matches and re.search(rf'\b{re.escape(phrase)}\b', text, re.IGNORECASE):
                     sm = re.search(rf'\b{re.escape(phrase)}\b', text, re.IGNORECASE)
                     emotional_phrases.append(f'"{sm.group(0)}..."')
+
+            machine_style_phrases = []
+            for phrase in self._MACHINE_STYLE_PHRASES:
+                pattern = rf'\b{re.escape(phrase)}(?:[\s.,;:!?…-]+[^\s.,;:!?…]+){{0,2}}'
+                matches = list(re.finditer(pattern, text, re.IGNORECASE))
+                for m in matches:
+                    if len(machine_style_phrases) >= 3:
+                        break
+                    item = f'"{m.group(0)}..."'
+                    if item not in machine_style_phrases:
+                        machine_style_phrases.append(item)
+                if not matches and re.search(rf'\b{re.escape(phrase)}\b', text, re.IGNORECASE):
+                    sm = re.search(rf'\b{re.escape(phrase)}\b', text, re.IGNORECASE)
+                    machine_style_phrases.append(f'"{sm.group(0)}..."')
 
             colon_errors = []
             for cm in re.finditer(r':', text):
@@ -288,6 +317,8 @@ class App(cst.CTk):
                 parts.append(f'тег "Канцелярит": ({", ".join(kantselyarit_phrases[:3])})')
             if emotional_phrases:
                 parts.append(f'тег "Эмоциональный ответ": ({", ".join(emotional_phrases[:3])})')
+            if machine_style_phrases:
+                parts.append(f'тег "Машинный стиль": ({", ".join(machine_style_phrases[:3])})')
             if colon_errors:
                 parts.append(f'тег "Языковые ошибки": заглавные буквы после двоеточий({", ".join(colon_errors[:3])})')
             if decimal_errors:
